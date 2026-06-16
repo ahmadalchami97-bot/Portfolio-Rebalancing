@@ -476,8 +476,9 @@ def build_deployment(ws):
     C(ws, "D18", "=SUM(D14:D17)", font=F_LABELB, fill=FILL_TOTAL, fmt=KWD, align=RIGHT)
 
     # Expected allocation after deployment
-    section(ws, "B20:E20", "Expected Allocation After Deployment")
-    headers(ws, 21, 2, ["Asset Class", "Value After (KWD)", "Allocation After %", "Target %"])
+    section(ws, "B20:F20", "Expected Allocation After Deployment")
+    headers(ws, 21, 2, ["Asset Class", "Value After (KWD)", "Allocation After %", "Target %",
+                        "Remaining Gap to Target (KWD)"])
     for i, a in enumerate(ASSETS):
         r = 22 + i
         ar = 6 + i
@@ -485,10 +486,12 @@ def build_deployment(ws):
         C(ws, f"C{r}", f"=H{ar}", fmt=KWD, align=RIGHT)
         C(ws, f"D{r}", f"=I{ar}", fmt=PCT, align=RIGHT)
         C(ws, f"E{r}", f"=D{ar}", fmt=PCT, align=RIGHT)
+        C(ws, f"F{r}", f"=MAX(0,E{r}*New_Total-C{r})", fmt=KWD, align=RIGHT)
     C(ws, "B26", "Total", font=F_LABELB, fill=FILL_TOTAL, align=LEFT)
     C(ws, "C26", "=SUM(C22:C25)", font=F_LABELB, fill=FILL_TOTAL, fmt=KWD, align=RIGHT)
     C(ws, "D26", "=SUM(D22:D25)", font=F_LABELB, fill=FILL_TOTAL, fmt=PCT, align=RIGHT)
     C(ws, "E26", "=SUM(E22:E25)", font=F_LABELB, fill=FILL_TOTAL, fmt=PCT, align=RIGHT)
+    C(ws, "F26", "=SUM(F22:F25)", font=F_LABELB, fill=FILL_TOTAL, fmt=KWD, align=RIGHT)
 
     # before/after chart
     bar = BarChart()
@@ -529,8 +532,7 @@ def build_rebalance(ws):
         C(ws, f"F{r}", f"=E{r}-C{r}", fmt=KWDc, align=RIGHT)
         C(ws, f"G{r}", f"=IFERROR(C{r}/Portfolio_Total,0)-D{r}", fmt=PCTc, align=RIGHT)
         C(ws, f"H{r}",
-          f'=IF(AND(ABS(G{r})>Tol_Band,ABS(F{r})>Min_Action),'
-          f'IF(F{r}>0,"Increase","Reduce"),"Hold")',
+          f'=IF(ABS(G{r})<=Tol_Band,"Hold",IF(F{r}>0,"Increase","Reduce"))',
           font=F_LABELB, align=CENTER)
     C(ws, "B10", "Total", font=F_LABELB, fill=FILL_TOTAL, align=LEFT)
     C(ws, "C10", "=SUM(C6:C9)", font=F_LABELB, fill=FILL_TOTAL, fmt=KWD, align=RIGHT)
@@ -573,17 +575,17 @@ def build_rebalance(ws):
         rr = 6 + i
         r = 29 + i
         C(ws, f"B{r}", a, font=F_LABEL, align=LEFT)
-        C(ws, f"C{r}", f'=IF(H{rr}<>"Hold",E{rr},C{rr})', fmt=KWD, align=RIGHT)
+        C(ws, f"C{r}", f'=IF(COUNTIF($H$6:$H$9,"Hold")=4,C{rr},E{rr})', fmt=KWD, align=RIGHT)
         C(ws, f"D{r}", f"=IFERROR(C{r}/$C$33,0)", fmt=PCT, align=RIGHT)
         C(ws, f"E{r}", f"=D{rr}", fmt=PCT, align=RIGHT)
     C(ws, "B33", "Total", font=F_LABELB, fill=FILL_TOTAL, align=LEFT)
     C(ws, "C33", "=SUM(C29:C32)", font=F_LABELB, fill=FILL_TOTAL, fmt=KWD, align=RIGHT)
     C(ws, "D33", "=SUM(D29:D32)", font=F_LABELB, fill=FILL_TOTAL, fmt=PCT, align=RIGHT)
     C(ws, "E33", "=SUM(E29:E32)", font=F_LABELB, fill=FILL_TOTAL, fmt=PCT, align=RIGHT)
-    note(ws, "B34:E35", "Assumes recommended moves are executed: classes flagged for action "
-                        "are moved to their target weight; classes within tolerance are held "
-                        "and may remain slightly off target. Any net cash difference is settled "
-                        "from the cash account.")
+    note(ws, "B34:E35", "A rebalance moves capital from overweight to underweight classes; the "
+                        "portfolio total is unchanged and no new capital is added. When any class "
+                        "breaches the tolerance band, the portfolio is returned to its strategic "
+                        "target weights (shown above); the 'Action' column flags which classes have drifted.")
 
     # action colour
     ws.conditional_formatting.add("H6:H9",

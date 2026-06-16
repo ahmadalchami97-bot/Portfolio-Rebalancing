@@ -17,8 +17,9 @@ Gold · Swiss Funds · S&P 500 ETFs · US Government Bonds. Base reporting curre
    summaries, and current/target allocation pie charts.
 4. **Capital Deployment** — enter new capital; it is allocated to underweight classes first
    (toward target), then by target weights, with the expected post-deployment allocation.
-5. **Rebalance** — current vs target value, capital-movement recommendations gated by the
-   tolerance band **and** minimum action threshold, total to reallocate, and post-rebalance mix.
+5. **Rebalance** — current vs target value, capital-movement recommendations (overweight→underweight)
+   gated by the tolerance band, total to reallocate, and the post-rebalance mix at target weights
+   (portfolio total unchanged — a true rebalance, not a capital injection).
 6. **Performance** — per-asset and portfolio return/CAGR, a historical allocation scenario,
    and growth-of-capital projections with comparison charts.
 
